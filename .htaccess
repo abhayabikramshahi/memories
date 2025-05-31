@@ -4,8 +4,8 @@ RewriteEngine On
 # Set default character set
 AddDefaultCharset UTF-8
 
-# Basic access control
-Order Allow,Deny
+# Basic access control - more permissive for Render
+Require all granted
 Allow from all
 
 # Enable CORS
@@ -36,7 +36,7 @@ Allow from all
     Deny from all
 </FilesMatch>
 
-# Protect uploads directory
+# Protect uploads directory from script execution
 <IfModule mod_rewrite.c>
     RewriteRule ^uploads/.*\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|htm|html|shtml|sh|cgi)$ - [F,NC,L]
 </IfModule>
@@ -73,26 +73,18 @@ ErrorDocument 500 /index.php
     ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
 
-# Allow only specific file types in uploads directory
-<FilesMatch "\.(jpg|jpeg|png|gif|mp4)$">
-    Order Allow,Deny
-    Allow from all
+# Allow access to specific file types
+<FilesMatch "\.(jpg|jpeg|png|gif|mp4|php)$">
+    Require all granted
 </FilesMatch>
 
-# Deny access to all other file types in uploads
-<FilesMatch "^(?!.*\.(jpg|jpeg|png|gif|mp4)$).*$">
-    Order Deny,Allow
-    Deny from all
-</FilesMatch>
-
-# Allow access to PHP files
-<FilesMatch "\.php$">
-    Order Allow,Deny
-    Allow from all
-</FilesMatch>
+# Set default handler
+DirectoryIndex index.php
 
 # Allow access to index.php
 <Files index.php>
-    Order Allow,Deny
-    Allow from all
+    Require all granted
 </Files>
+
+# Set default handler for PHP files
+AddHandler application/x-httpd-php .php
