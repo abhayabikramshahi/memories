@@ -1,49 +1,43 @@
 <?php
-// Create uploads directory if it doesn't exist
-if (!file_exists('uploads')) {
-    mkdir('uploads', 0777, true);
-}
-
-// Check if a file was uploaded
-if (isset($_FILES['media']) && $_FILES['media']['error'] === UPLOAD_ERR_OK) {
-    $file = $_FILES['media'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $account = isset($_POST['account']) ? $_POST['account'] : 'hangma';
     
-    // Validate file type
-    $allowedTypes = [
-        // Images
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        // Videos
-        'video/mp4',
-        'video/webm',
-        'video/ogg'
-    ];
-    
-    $fileType = mime_content_type($file['tmp_name']);
-    
-    if (!in_array($fileType, $allowedTypes)) {
-        header('Location: index.php?status=error&message=Invalid file type');
-        exit();
-    }
-    
-    // Check file size (limit to 100MB)
-    if ($file['size'] > 100 * 1024 * 1024) {
-        header('Location: index.php?status=error&message=File too large');
-        exit();
-    }
-    
-    // Generate unique filename
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $filename = uniqid() . '.' . $extension;
-    $destination = 'uploads/' . $filename;
-    
-    // Move uploaded file
-    if (move_uploaded_file($file['tmp_name'], $destination)) {
-        header('Location: index.php?status=success');
+    if (isset($_FILES["media"])) {
+        $target_dir = "uploads/";
+        $file_extension = strtolower(pathinfo($_FILES["media"]["name"], PATHINFO_EXTENSION));
+        $timestamp = time();
+        $new_filename = $account . '_' . $timestamp . '.' . $file_extension;
+        $target_file = $target_dir . $new_filename;
+        
+        // Check if image file is a actual image or fake image
+        $check = getimagesize($_FILES["media"]["tmp_name"]);
+        if($check === false) {
+            header("Location: index.php?status=error&message=File is not an image or video.");
+            exit();
+        }
+        
+        // Check file size (10MB max)
+        if ($_FILES["media"]["size"] > 10000000) {
+            header("Location: index.php?status=error&message=File is too large. Maximum size is 10MB.");
+            exit();
+        }
+        
+        // Allow certain file formats
+        $allowed_types = array('jpg', 'jpeg', 'png', 'gif', 'mp4');
+        if (!in_array($file_extension, $allowed_types)) {
+            header("Location: index.php?status=error&message=Only JPG, JPEG, PNG, GIF & MP4 files are allowed.");
+            exit();
+        }
+        
+        if (move_uploaded_file($_FILES["media"]["tmp_name"], $target_file)) {
+            header("Location: index.php?status=success");
+        } else {
+            header("Location: index.php?status=error&message=Error uploading file.");
+        }
     } else {
-        header('Location: index.php?status=error');
+        header("Location: index.php?status=error&message=No file selected.");
     }
 } else {
-    header('Location: index.php?status=error');
+    header("Location: index.php");
 }
+?>

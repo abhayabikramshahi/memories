@@ -4,132 +4,338 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Beautiful Memories</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Our Beautiful Memories</h1>
-            <?php
-            $uploads_dir = 'uploads';
-            $memory_count = 0;
-            if (is_dir($uploads_dir)) {
-                $files = scandir($uploads_dir);
-                $memory_count = count(array_diff($files, array('.', '..')));
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e91e63',
+                        secondary: '#ff4081',
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                }
             }
-            ?>
-            <div class="memory-counter"><?php echo $memory_count; ?> Memories Shared ❤</div>
-            <p>A collection of our precious moments together ❤</p>
-        </div>
-        <div class="upload-section">
-            <h2>Add New Memory</h2>
-            <form action="upload.php" method="post" enctype="multipart/form-data" class="upload-form">
-                <div class="file-input-wrapper">
-                    <input type="file" name="media" accept="image/*,video/*" class="file-input" required>
-                    <div class="file-input-label">
-                        <span>📸 Drop your photo or video here</span>
-                        <small>or click to browse</small>
+        }
+    </script>
+    <style>
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+        }
+        .image-container img {
+            transition: transform 0.3s ease;
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .image-container:hover img {
+            transform: scale(1.02);
+        }
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 0.5rem;
+        }
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+        .post-media {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-2xl font-semibold text-primary">Our Beautiful Memories</h1>
+                <div class="flex items-center gap-4">
+                    <div class="bg-primary/10 px-4 py-2 rounded-full text-primary font-medium">
+                        <i class="fas fa-heart mr-2"></i>
+                        <?php
+                        $uploads_dir = 'uploads';
+                        $memory_count = 0;
+                        if (is_dir($uploads_dir)) {
+                            $files = scandir($uploads_dir);
+                            $memory_count = count(array_diff($files, array('.', '..')));
+                        }
+                        echo $memory_count . ' Memories';
+                        ?>
                     </div>
                 </div>
-                <button type="submit" class="upload-btn">Share Memory</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Account Selection -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="p-4 border-b border-gray-100">
+                <h2 class="font-medium text-gray-800 text-sm mb-3">Select Account</h2>
+                <div class="flex gap-4">
+                    <button onclick="selectAccount('hangma')" class="flex-1 flex items-center gap-3 p-3 rounded-lg border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-colors duration-300">
+                        <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                            <span class="text-primary font-medium">H</span>
+                        </div>
+                        <div class="text-left">
+                            <div class="font-medium text-gray-800">Hangma</div>
+                            <div class="text-xs text-gray-500">@hangma</div>
+                        </div>
+                    </button>
+                    <button onclick="selectAccount('abhaya')" class="flex-1 flex items-center gap-3 p-3 rounded-lg border-2 border-gray-200 hover:border-primary/50 hover:bg-gray-50 transition-colors duration-300">
+                        <div class="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                            <span class="text-secondary font-medium">A</span>
+                        </div>
+                        <div class="text-left">
+                            <div class="font-medium text-gray-800">Abhaya</div>
+                            <div class="text-xs text-gray-500">@abhaya</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="p-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span class="text-primary font-medium" id="currentAccountInitial">H</span>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="font-medium text-gray-800">Share a Memory</h2>
+                        <p class="text-xs text-gray-500">as <span id="currentAccountName">Hangma</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <form action="upload.php" method="post" enctype="multipart/form-data" class="p-4">
+                <input type="hidden" name="account" id="selectedAccount" value="hangma">
+                <div class="relative p-6 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer bg-gray-50/50 transition-all duration-300 hover:bg-gray-50 hover:border-primary/50 group mb-4">
+                    <input type="file" name="media" accept="image/*,video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="bg-primary/10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-cloud-upload-alt text-2xl text-primary"></i>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-base font-medium text-gray-700 group-hover:text-primary transition-colors duration-300">Drop your photo or video here</span>
+                            <p class="text-gray-500 text-sm mt-1">or</p>
+                            <button type="button" class="mt-1 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium hover:bg-primary/20 transition-colors duration-300">
+                                Browse Files
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500">Supports JPG, PNG, GIF, MP4 up to 10MB</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-primary"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-medium text-gray-800 text-sm">Tips for best results</h3>
+                        <p class="text-xs text-gray-600 mt-0.5">For the best viewing experience, we recommend uploading high-quality images and videos. Keep file sizes under 10MB for optimal performance.</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-full text-sm font-semibold uppercase tracking-wider shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
+                        <i class="fas fa-share-alt mr-2"></i>
+                        Share Memory
+                    </button>
+                </div>
             </form>
+
             <?php
             if (isset($_GET['status'])) {
                 if ($_GET['status'] == 'success') {
-                    echo '<div class="message success">Memory uploaded successfully! ❤</div>';
+                    echo '<div class="px-4 pb-4"><div class="p-3 bg-green-50 text-green-700 rounded-lg border border-green-200 flex items-center gap-3"><i class="fas fa-check-circle"></i><div><p class="font-medium text-sm">Success!</p><p class="text-xs">Memory uploaded successfully!</p></div></div></div>';
                 } else if ($_GET['status'] == 'error') {
                     $errorMessage = isset($_GET['message']) ? $_GET['message'] : 'Error uploading memory. Please try again.';
-                    echo '<div class="message error">' . htmlspecialchars($errorMessage) . '</div>';
+                    echo '<div class="px-4 pb-4"><div class="p-3 bg-red-50 text-red-700 rounded-lg border border-red-200 flex items-center gap-3"><i class="fas fa-exclamation-circle"></i><div><p class="font-medium text-sm">Error</p><p class="text-xs">' . htmlspecialchars($errorMessage) . '</p></div></div></div>';
                 }
             }
             ?>
         </div>
 
-        <div class="media-grid">
+        <!-- Feed Section -->
+        <div class="space-y-4">
             <?php
             $uploads_dir = 'uploads';
             if (is_dir($uploads_dir)) {
                 $files = scandir($uploads_dir);
+                $files = array_diff($files, array('.', '..'));
+                $files = array_reverse($files); // Show newest first
+                
                 foreach ($files as $file) {
-                    if ($file != '.' && $file != '..') {
-                        $file_path = 'uploads/' . $file;
-                        $file_type = mime_content_type($file_path);
-                        $is_video = strpos($file_type, 'video/') === 0;
-                        
-                        echo '<div class="media-item">';
-                        if ($is_video) {
-                            echo '<div class="video-player">';
-                            echo '<video src="' . $file_path . '" preload="metadata" controls></video>';
-                            echo '<div class="video-controls">';
-                            echo '<button class="play-pause"><i class="fas fa-play"></i></button>';
-                            echo '<div class="progress-bar">';
-                            echo '<div class="progress"></div>';
-                            echo '</div>';
-                            echo '<div class="time"><span class="current">0:00</span> / <span class="duration">0:00</span></div>';
-                            echo '<div class="volume-container">';
-                            echo '<button class="volume"><i class="fas fa-volume-up"></i></button>';
-                            echo '<input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">';
-                            echo '</div>';
-                            echo '<button class="fullscreen"><i class="fas fa-expand"></i></button>';
-                            echo '</div>';
-                            echo '</div>';
-                        } else {
-                            echo '<a href="' . $file_path . '" data-fancybox="gallery">';
-                            echo '<img src="' . $file_path . '" alt="Memory">';
-                            echo '</a>';
-                        }
-                        echo '<div class="media-overlay">';
-                        echo '<span>' . date('F j, Y', filemtime($file_path)) . '</span>';
+                    $file_path = 'uploads/' . $file;
+                    $file_type = mime_content_type($file_path);
+                    $is_video = strpos($file_type, 'video/') === 0;
+                    $date = date('F j, Y', filemtime($file_path));
+                    $time = date('g:i A', filemtime($file_path));
+                    
+                    // Determine account based on file name or metadata
+                    $account = strpos($file, 'abhaya') !== false ? 'abhaya' : 'hangma';
+                    $accountName = $account === 'abhaya' ? 'Abhaya' : 'Hangma';
+                    $accountInitial = $account === 'abhaya' ? 'A' : 'H';
+                    $accountColor = $account === 'abhaya' ? 'secondary' : 'primary';
+                    
+                    echo '<div class="bg-white rounded-xl shadow-sm overflow-hidden">';
+                    // Post Header
+                    echo '<div class="p-3 border-b border-gray-100">';
+                    echo '<div class="flex items-center gap-3">';
+                    echo '<div class="w-8 h-8 bg-' . $accountColor . '/10 rounded-full flex items-center justify-center">';
+                    echo '<span class="text-' . $accountColor . ' font-medium text-sm">' . $accountInitial . '</span>';
+                    echo '</div>';
+                    echo '<div>';
+                    echo '<div class="font-medium text-gray-800 text-sm">' . $accountName . '</div>';
+                    echo '<div class="text-xs text-gray-500">' . $date . ' at ' . $time . '</div>';
+                    echo '</div>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    // Media Content
+                    echo '<div class="post-media">';
+                    if ($is_video) {
+                        echo '<div class="relative w-full rounded-lg overflow-hidden">';
+                        echo '<video src="' . $file_path . '" preload="metadata" controls class="w-full rounded-lg"></video>';
+                        echo '<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">';
+                        echo '<button class="play-pause bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors duration-300"><i class="fas fa-play"></i></button>';
+                        echo '<div class="flex-1 h-1 bg-white/20 rounded-full cursor-pointer">';
+                        echo '<div class="progress h-full bg-primary rounded-full w-0"></div>';
                         echo '</div>';
+                        echo '<div class="text-white text-sm font-medium min-w-[100px]"><span class="current">0:00</span> / <span class="duration">0:00</span></div>';
+                        echo '<div class="flex items-center gap-2">';
+                        echo '<button class="volume bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors duration-300"><i class="fas fa-volume-up"></i></button>';
+                        echo '<input type="range" class="volume-slider w-0 h-1 bg-white/20 rounded-full transition-all duration-300 hover:w-20" min="0" max="1" step="0.1" value="1">';
+                        echo '</div>';
+                        echo '<button class="fullscreen bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors duration-300"><i class="fas fa-expand"></i></button>';
+                        echo '</div>';
+                        echo '</div>';
+                    } else {
+                        echo '<div class="image-container">';
+                        echo '<a href="' . $file_path . '" data-fancybox="gallery" class="block w-full">';
+                        echo '<img src="' . $file_path . '" alt="Memory" class="w-full h-auto object-contain rounded-lg">';
+                        echo '<div class="image-overlay"></div>';
+                        echo '</a>';
                         echo '</div>';
                     }
+                    echo '</div>';
+                    
+                    // Post Footer
+                    echo '<div class="p-3">';
+                    echo '<div class="flex items-center gap-4">';
+                    echo '<button class="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors duration-300 text-sm">';
+                    echo '<i class="fas fa-heart"></i>';
+                    echo '<span>Like</span>';
+                    echo '</button>';
+                    echo '<button class="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors duration-300 text-sm">';
+                    echo '<i class="fas fa-comment"></i>';
+                    echo '<span>Comment</span>';
+                    echo '</button>';
+                    echo '<button class="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors duration-300 text-sm">';
+                    echo '<i class="fas fa-share"></i>';
+                    echo '<span>Share</span>';
+                    echo '</button>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    echo '</div>';
                 }
             }
             ?>
         </div>
-    </div>
+    </main>
+
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
         Fancybox.bind('[data-fancybox]', {
             Toolbar: {
-                display: ['zoom', 'slideshow', 'fullscreen', 'close']
+                display: {
+                    left: ['infobar'],
+                    middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'rotateCCW', 'rotateCW', 'flipX', 'flipY'],
+                    right: ['slideshow', 'thumbs', 'close']
+                }
             },
             Images: {
                 Panzoom: {
-                    maxScale: 4
+                    maxScale: 5,
+                    wheel: 'zoom',
+                    doubleClick: 'toggleZoom',
+                    infinite: false,
+                    rubberband: true
+                }
+            },
+            Carousel: {
+                transition: 'slide',
+                friction: 0.96,
+                Dots: false,
+                Navigation: {
+                    prevTpl: '<svg><path d="M19 3l2 2-8 8 8 8-2 2-10-10z"/></svg>',
+                    nextTpl: '<svg><path d="M5 3l-2 2 8 8-8 8 2 2 10-10z"/></svg>',
                 }
             },
             Html: {
                 video: {
                     ratio: 16/9,
-                    autoplay: true,
-                    playsinline: true
+                    autoplay: false,
+                    playsinline: true,
+                    controls: true
                 }
             },
             Slideshow: {
                 autoStart: false,
-                speed: 3000
+                speed: 3000,
+                progress: true
             },
             fullscreen: {
                 autoStart: false
             },
             Video: {
                 autoplay: false,
+                clickToPlay: true,
+                controls: true,
                 ratio: 16/9
-            }
+            },
+            Thumbs: {
+                type: 'modern',
+                Carousel: {
+                    center: true,
+                    fillSlide: true
+                }
+            },
+            dragToClose: false,
+            preload: 3,
+            animated: true,
+            idle: 3000,
+            showClass: 'fancybox-zoomIn',
+            hideClass: 'fancybox-zoomOut'
         });
 
         // Preview selected file
-        const fileInput = document.querySelector('.file-input');
+        const fileInput = document.querySelector('input[type="file"]');
         const fileLabel = document.querySelector('.file-input-label');
         
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 const fileName = this.files[0].name;
-                fileLabel.querySelector('span').textContent = fileName;
+                this.parentElement.querySelector('span').textContent = fileName;
             }
         });
 
@@ -212,6 +418,25 @@
                 return `${minutes}:${seconds.toString().padStart(2, '0')}`;
             }
         });
+
+        // Account selection functionality
+        function selectAccount(account) {
+            const buttons = document.querySelectorAll('[onclick^="selectAccount"]');
+            buttons.forEach(button => {
+                if (button.getAttribute('onclick').includes(account)) {
+                    button.classList.remove('border-gray-200', 'hover:border-primary/50', 'hover:bg-gray-50');
+                    button.classList.add('border-primary', 'bg-primary/5', 'hover:bg-primary/10');
+                } else {
+                    button.classList.remove('border-primary', 'bg-primary/5', 'hover:bg-primary/10');
+                    button.classList.add('border-gray-200', 'hover:border-primary/50', 'hover:bg-gray-50');
+                }
+            });
+
+            // Update current account display
+            document.getElementById('selectedAccount').value = account;
+            document.getElementById('currentAccountName').textContent = account === 'abhaya' ? 'Abhaya' : 'Hangma';
+            document.getElementById('currentAccountInitial').textContent = account === 'abhaya' ? 'A' : 'H';
+        }
     </script>
 </body>
 </html>

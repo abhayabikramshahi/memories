@@ -1,0 +1,37 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Prevent directory listing
+Options -Indexes
+
+# Handle media files
+<FilesMatch "\.(jpg|jpeg|png|gif|mp4|webm|ogg)$">
+    # Cache media files for 1 week
+    Header set Cache-Control "max-age=604800, public"
+    
+    # Allow direct access to media files
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Protect sensitive files
+<FilesMatch "^\.(htaccess|htpasswd|ini|log|sh|inc|bak)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Set maximum upload size
+php_value upload_max_filesize 100M
+php_value post_max_size 100M
+
+# Enable CORS for media files
+<IfModule mod_headers.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|mp4|webm|ogg)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
+
+# Compress text files
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript
+</IfModule>
