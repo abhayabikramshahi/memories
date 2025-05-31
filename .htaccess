@@ -33,11 +33,12 @@ AddDefaultCharset UTF-8
 </FilesMatch>
 
 # Protect uploads directory
-<Directory "uploads">
-    Options -Indexes
-    AllowOverride None
-    Require all granted
-</Directory>
+<IfModule mod_rewrite.c>
+    RewriteRule ^uploads/.*\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|htm|html|shtml|sh|cgi)$ - [F,NC,L]
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
 
 # Handle errors
 ErrorDocument 404 /index.php
@@ -67,3 +68,15 @@ ErrorDocument 500 /index.php
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
+
+# Allow only specific file types in uploads directory
+<FilesMatch "\.(jpg|jpeg|png|gif|mp4)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Deny access to all other file types in uploads
+<FilesMatch "^(?!.*\.(jpg|jpeg|png|gif|mp4)$).*$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
