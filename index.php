@@ -125,38 +125,21 @@
                 </div>
             </div>
 
-            <form action="upload.php" method="post" enctype="multipart/form-data" class="p-4">
+            <form action="upload.php" method="post" enctype="multipart/form-data" class="space-y-4" id="uploadForm">
                 <input type="hidden" name="account" id="selectedAccount" value="hangma">
-                <div class="relative p-6 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer bg-gray-50/50 transition-all duration-300 hover:bg-gray-50 hover:border-primary/50 group mb-4">
-                    <input type="file" name="media" accept="image/*,video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
-                    <div class="flex flex-col items-center gap-3">
-                        <div class="bg-primary/10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                            <i class="fas fa-cloud-upload-alt text-2xl text-primary"></i>
-                        </div>
-                        <div class="text-center">
-                            <span class="text-base font-medium text-gray-700 group-hover:text-primary transition-colors duration-300">Drop your photo or video here</span>
-                            <p class="text-gray-500 text-sm mt-1">or</p>
-                            <button type="button" class="mt-1 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium hover:bg-primary/20 transition-colors duration-300">
-                                Browse Files
+                <div class="flex items-center space-x-4">
+                    <div class="flex-1">
+                        <label for="media" class="sr-only">Choose file</label>
+                        <input type="file" name="media" id="media" accept="image/*,video/mp4" class="hidden" required>
+                        <div class="relative">
+                            <input type="text" id="file-name" readonly placeholder="Choose a file..." class="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500">
+                            <button type="button" onclick="document.getElementById('media').click()" class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1 text-sm font-medium text-pink-600 hover:text-pink-700">
+                                Browse
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500">Supports JPG, PNG, GIF, MP4 up to 10MB</p>
+                        <p class="mt-1 text-xs text-gray-500">JPG, PNG, GIF or MP4 up to 10MB</p>
                     </div>
-                </div>
-
-                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-4">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-info-circle text-primary"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="font-medium text-gray-800 text-sm">Tips for best results</h3>
-                        <p class="text-xs text-gray-600 mt-0.5">For the best viewing experience, we recommend uploading high-quality images and videos. Keep file sizes under 10MB for optimal performance.</p>
-                    </div>
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="submit" class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-full text-sm font-semibold uppercase tracking-wider shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
-                        <i class="fas fa-share-alt mr-2"></i>
+                    <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg hover:from-pink-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200">
                         Share Memory
                     </button>
                 </div>
@@ -328,14 +311,48 @@
             hideClass: 'fancybox-zoomOut'
         });
 
-        // Preview selected file
-        const fileInput = document.querySelector('input[type="file"]');
-        const fileLabel = document.querySelector('.file-input-label');
-        
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const fileName = this.files[0].name;
-                this.parentElement.querySelector('span').textContent = fileName;
+        // Update file input handling
+        document.getElementById('media').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || '';
+            document.getElementById('file-name').value = fileName;
+            
+            // Validate file size
+            if (e.target.files[0]) {
+                const fileSize = e.target.files[0].size;
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                
+                if (fileSize > maxSize) {
+                    alert('File is too large. Maximum size is 10MB.');
+                    e.target.value = '';
+                    document.getElementById('file-name').value = '';
+                    return;
+                }
+            }
+        });
+
+        // Update form submission
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('media');
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                alert('Please select a file to upload.');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            
+            if (file.size > maxSize) {
+                e.preventDefault();
+                alert('File is too large. Maximum size is 10MB.');
+                return;
+            }
+            
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4'];
+            if (!allowedTypes.includes(file.type)) {
+                e.preventDefault();
+                alert('Only JPG, PNG, GIF & MP4 files are allowed.');
+                return;
             }
         });
 
