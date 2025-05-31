@@ -4,6 +4,10 @@ RewriteEngine On
 # Set default character set
 AddDefaultCharset UTF-8
 
+# Basic access control
+Order Allow,Deny
+Allow from all
+
 # Enable CORS
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"
@@ -28,7 +32,7 @@ AddDefaultCharset UTF-8
 
 # Protect sensitive files
 <FilesMatch "^\.">
-    Order allow,deny
+    Order Deny,Allow
     Deny from all
 </FilesMatch>
 
@@ -80,3 +84,15 @@ ErrorDocument 500 /index.php
     Order Deny,Allow
     Deny from all
 </FilesMatch>
+
+# Allow access to PHP files
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Allow access to index.php
+<Files index.php>
+    Order Allow,Deny
+    Allow from all
+</Files>
